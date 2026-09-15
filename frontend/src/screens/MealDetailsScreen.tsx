@@ -1,35 +1,27 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import { useEffect, useLayoutEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { useLayoutEffect, useState } from "react";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import Ingredients from "../../components/Ingredients";
 import Steps from "../../components/Steps";
 import IconButton from "../../components/IconButton";
-import { getMealById } from "../api/mealsApi";
-import type { Meal } from "../models/Meal";
+import useMeal from "../hooks/useMeal";
+import Loading from "../../components/Loading";
+import Error from "../../components/Error";
 
 type MealDetailsParams = {
   mealId: string;
 };
 
 function MealDetailsScreen() {
-  const [meal, setMeal] = useState<Meal | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const route =
     useRoute<RouteProp<Record<string, MealDetailsParams>, string>>();
 
   const navigation = useNavigation();
-
   const mealId = route.params?.mealId;
+  console.log("mealId:", mealId);
+  const { error, isLoading, meal } = useMeal(mealId);
+  console.log(error, isLoading, meal);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -43,50 +35,9 @@ function MealDetailsScreen() {
     });
   }, [navigation, meal?.title]);
 
-  useEffect(() => {
-    async function loadMeal() {
-      if (!mealId) {
-        setError("Meal ID is missing.");
-        setIsLoading(false);
-        return;
-      }
+  if (isLoading) return <Loading />;
 
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const result = await getMealById(mealId);
-
-        setMeal(result);
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Unable to load meal";
-
-        setError(message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadMeal();
-  }, [mealId]);
-
-  if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-        <Text>Loading meal...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    );
-  }
+  if (error) return <Error error={error} />;
 
   if (!meal) {
     return (
@@ -100,19 +51,14 @@ function MealDetailsScreen() {
     <View style={styles.container}>
       <ScrollView>
         <Image source={{ uri: meal.imageUrl }} style={styles.image} />
-
         <Text style={styles.title}>{meal.title}</Text>
-
         <View style={styles.details}>
           <Text style={styles.detailText}>{meal.duration}m</Text>
-
           <Text style={styles.detailText}>{meal.complexity.toUpperCase()}</Text>
-
           <Text style={styles.detailText}>
             {meal.affordability.toUpperCase()}
           </Text>
         </View>
-
         <Ingredients meal={meal} />
         <Steps meal={meal} />
       </ScrollView>

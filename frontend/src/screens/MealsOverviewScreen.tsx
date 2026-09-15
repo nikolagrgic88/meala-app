@@ -1,12 +1,11 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
-import { useEffect, useLayoutEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-
+import { useLayoutEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import MealItem from "../../components/MealItem";
-import { getCategories } from "../api/categoriesApi";
-import { getMealsByCategory } from "../api/mealsApi";
-import type { Meal } from "../models/Meal";
+import useMeals from "../hooks/useMeals";
+import Loading from "../../components/Loading";
+import Error from "../../components/Error";
 
 type MealsOverviewRouteParams = {
   id: string;
@@ -17,11 +16,7 @@ function MealsOverviewScreen() {
     useRoute<RouteProp<Record<string, MealsOverviewRouteParams>, string>>();
   const navigation = useNavigation();
   const categoryId = route.params?.id;
-
-  const [meals, setMeals] = useState<Meal[]>([]);
-  const [categoryTitle, setCategoryTitle] = useState("Meals");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { categoryTitle, error, isLoading, meals } = useMeals(categoryId);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -29,58 +24,12 @@ function MealsOverviewScreen() {
     });
   }, [navigation, categoryTitle]);
 
-  useEffect(() => {
-    async function loadMeals() {
-      if (!categoryId) {
-        setError("Category ID is missing.");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const [mealsResult, categoriesResult] = await Promise.all([
-          getMealsByCategory(categoryId),
-          getCategories(),
-        ]);
-
-        setMeals(mealsResult);
-
-        const selectedCategory = categoriesResult.find(
-          (category) => category.groupId === categoryId,
-        );
-
-        setCategoryTitle(selectedCategory?.title ?? "Meals");
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Unable to load meals";
-
-        setError(message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadMeals();
-  }, [categoryId]);
-
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-        <Text>Loading meals...</Text>
-      </View>
-    );
+    return <Loading />;
   }
 
   if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    );
+    return <Error error={error} />;
   }
 
   if (meals.length === 0) {
@@ -114,9 +63,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 12,
     padding: 24,
-  },
-  errorText: {
-    color: "#b00020",
-    textAlign: "center",
   },
 });

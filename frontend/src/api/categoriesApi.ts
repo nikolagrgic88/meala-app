@@ -1,14 +1,12 @@
 import { API_BASE_URL } from "./apiConfig";
 import type { Category } from "../models/Category";
+import axios from "axios";
+import apiClient from "./apiClient";
 
 export async function getCategories(): Promise<Category[]> {
-  const response = await fetch(`${API_BASE_URL}/categories`);
+  const response = await apiClient.get<Category[]>(
+    `${API_BASE_URL}/categories`,
+  );
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch categories: ${response.status}`);
-  }
-
-  const categories: Category[] = await response.json();
-
-  return categories;
+  return response.data;
 }

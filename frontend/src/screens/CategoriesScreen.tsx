@@ -1,5 +1,4 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { getCategories } from "../api/categoriesApi";
+import {  StyleSheet, View } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import CategoryGridTile from "../../components/CategoryGridTile";
 import {
@@ -7,52 +6,19 @@ import {
   ParamListBase,
   useNavigation,
 } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import { Category } from "../models/Category";
+
+import Loading from "../../components/Loading";
+import Error from "../../components/Error";
+import useCategories from "../hooks/useCategories";
 
 function CategoriesScreen() {
-  const [categories, setCategories] = useState<Category[]>();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const { categories, isLoading, error } = useCategories();
 
-  useEffect(() => {
-    async function loadCategories() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const results = await getCategories();
-        setCategories(results);
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Unable to load categories";
+  if (isLoading) return <Loading />;
 
-        setError(message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadCategories();
-  }, []);
+  if (error) return <Error error={error} />;
 
-  if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-
-        <Text>Loading categories...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text>{error}</Text>
-      </View>
-    );
-  }
   return (
     <View style={styles.container}>
       <FlashList

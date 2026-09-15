@@ -1,7 +1,7 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import Meal from "../meal";
-import { useNavigation } from "@react-navigation/native";
 
+import { useNavigation } from "@react-navigation/native";
+import { Meal } from "../src/models/Meal";
 
 type MealItemProps = {
   itemData: Meal;
@@ -14,15 +14,12 @@ function MealItem({ itemData }: MealItemProps) {
     <View style={styles.mealItem}>
       <Pressable
         android_ripple={{ color: "#e7e5e564" }}
-        onPress={() =>
-          navigation.navigate("MealDetails", { mealId: itemData.id })
-        }
+        onPress={() => navigation.navigate("MealDetails", { mealId: itemData.id })}
       >
         <View>
           <Image style={styles.image} source={{ uri: itemData.imageUrl }} />
           <Text style={styles.title}>{itemData.title}</Text>
         </View>
-       
       </Pressable>
     </View>
   );
@@ -49,5 +46,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: 8,
   },
-
 });

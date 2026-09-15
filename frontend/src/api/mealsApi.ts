@@ -1,38 +1,24 @@
+import axios from "axios";
 import { API_BASE_URL } from "./apiConfig";
 import type { Meal } from "../models/Meal";
+import apiClient from "./apiClient";
 
 export async function getMeals(): Promise<Meal[]> {
-  const response = await fetch(`${API_BASE_URL}/meals`);
+  const response = await apiClient.get<Meal[]>(`${API_BASE_URL}/meals`);
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch meals: ${response.status}`);
-  }
-
-  return response.json();
+  return response.data;
 }
 
 export async function getMealsByCategory(categoryId: string): Promise<Meal[]> {
-  const response = await fetch(`${API_BASE_URL}/meals/category/${categoryId}`);
+  const response = await apiClient.get<Meal[]>(
+    `${API_BASE_URL}/meals/category/${categoryId}`,
+  );
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch meals: ${response.status}`);
-  }
-
-  return response.json();
+  return response.data;
 }
 
 export async function getMealById(id: string): Promise<Meal> {
-  const response = await fetch(`${API_BASE_URL}/meals/${id}`);
+  const response = await apiClient.get<Meal>(`${API_BASE_URL}/meals/${id}`);
 
-  if (!response.ok) {
-    if (response.status === 404) {
-      throw new Error("Meal not found.");
-    }
-
-    throw new Error(`Failed to fetch meal: ${response.status}`);
-  }
-
-  const meal: Meal = await response.json();
-
-  return meal;
+  return response.data;
 }

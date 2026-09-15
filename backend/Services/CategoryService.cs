@@ -18,9 +18,7 @@ public class CategoryService : ICategoryService
     public async Task<List<Category>> GetAllCategoriesAsync()
     {
      
-        var count = await _categories.CountDocumentsAsync(
-     
-        FilterDefinition<Category>.Empty);
+        var count = await _categories.CountDocumentsAsync(FilterDefinition<Category>.Empty);
       
         Console.WriteLine($"Categories found by API: {count}");
         return await _categories

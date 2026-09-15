@@ -2,6 +2,12 @@ using Microsoft.Extensions.Options;
 using MobileApp.Api.Services;
 using MobileApp.Api.Settings;
 using MongoDB.Driver;
+using Microsoft.AspNetCore.Identity;
+using MobileApp.Api.Models;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,10 +63,67 @@ builder.Services.AddSingleton<IMongoDatabase>(serviceProvider =>
     return mongoClient.GetDatabase(settings.DatabaseName);
 });
 
-// Register meal and category services.
+// Register services.
 builder.Services.AddScoped<IMealService, MealService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITokenService, TokenService >();
 
+builder.Services
+    .AddOptions<JwtSettings>()
+    .Bind(
+        builder.Configuration.GetSection(
+            JwtSettings.SectionName
+        )
+    )
+    .Validate(
+        settings =>
+            !string.IsNullOrWhiteSpace(settings.SecretKey),
+        "JWT secret key is required."
+    )
+    .ValidateOnStart();
+
+
+
+
+
+var jwtSettings = builder.Configuration
+                      .GetSection(JwtSettings.SectionName)
+                      .Get<JwtSettings>()
+                  ?? throw new InvalidOperationException(
+                      "JWT settings are missing."
+                  );
+
+builder.Services
+    .AddAuthentication(
+        JwtBearerDefaults.AuthenticationScheme
+    )
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = jwtSettings.Issuer,
+
+                ValidateAudience = true,
+                ValidAudience = jwtSettings.Audience,
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(
+                            jwtSettings.SecretKey
+                        )
+                    ),
+
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromSeconds(30)
+            };
+    });
+
+builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Swagger is useful for testing your API on your computer.
@@ -77,6 +140,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

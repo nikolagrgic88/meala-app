@@ -11,4 +11,6 @@ public class MongoDbSettings
     public string MealsCollectionName { get; set; } = string.Empty;
 
     public string CategoriesCollectionName { get; set; } = string.Empty;
+    
+    public string AuthenticationCollectionName { get; set; } = string.Empty;
 }

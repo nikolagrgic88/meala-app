@@ -1,33 +1,56 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import CategoriesScreen from "../screens/CategoriesScreen";
-import MealsOverviewScreen from "../screens/MealsOverviewScreen";
 import { StaticParamList } from "@react-navigation/native";
+import { TabNavigator } from "./TabNavigator";
+import MealsOverviewScreen from "../screens/MealsOverviewScreen";
 import MealDetailsScreen from "../screens/MealDetailsScreen";
-import { Text } from "react-native";
+import ProfileScreen from "../screens/ProfileScreen";
+import SignUpScreen from "../screens/SignUpScreen";
+import MyMealsScreen from "../screens/MyMealsScreen";
+import SavedMealsScreen from "../screens/SavedMealsScreen";
 
 export const RootStack = createNativeStackNavigator({
-  initialRouteName: "Home",
+  initialRouteName: "Tabs",
   screenOptions: {
     headerTitleAlign: "center",
-    headerStyle: {},
   },
   screens: {
-    Home: {
-      screen: CategoriesScreen,
+    Tabs: {
+      screen: TabNavigator,
       options: {
-        title: "All Categories",
+        headerShown: false,
       },
     },
     MealsOverviewScreen: {
       screen: MealsOverviewScreen,
-      if: () => true,
     },
     MealDetails: {
       screen: MealDetailsScreen,
-      // options: { headerRight: () => <Text>Hello </Text> },
+    },
+    AccountDetails: {
+      screen: ProfileScreen,
+      options: {
+        title: "Profile",
+      },
+    },
+    SignUp: {
+      screen: SignUpScreen,
+    },
+    SavedMeals: {
+      screen: SavedMealsScreen,
+      options: {
+        title: "Saved Meals",
+      },
+    },
+
+    MyMeals: {
+      screen: MyMealsScreen,
+      options: {
+        title: "My Meals",
+      },
     },
   },
 });
+
 type RootStackParamList = StaticParamList<typeof RootStack>;
 
 declare global {

@@ -40,8 +40,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Category>> Create(
-        CreateCategoryDto request)
+    public async Task<ActionResult<Category>> Create(CreateCategoryDto request)
     {
         var category = new Category
         {
